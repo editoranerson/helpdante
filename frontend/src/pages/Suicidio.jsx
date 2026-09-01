@@ -5,10 +5,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
-  X, ArrowLeft, Music, Play, Ear, HandHeart, PhoneCall, MessageSquareX, ShieldOff, EyeOff,
+  X, ArrowLeft, Music, Play, Pause, Ear, HandHeart, PhoneCall, MessageSquareX, ShieldOff, EyeOff,
   Heart, Instagram, Mail, Globe, Phone, MessageCircle, Scale, BookMarked, ExternalLink
 } from "lucide-react";
 import * as LucideIcons from "lucide-react";
+import { useMiniPlayer, extractYouTubeId } from "@/lib/miniPlayer";
 
 const iconFor = (name) => {
   const C = LucideIcons[name] || Heart;
@@ -16,15 +17,8 @@ const iconFor = (name) => {
 };
 
 function ytEmbed(url) {
-  try {
-    const u = new URL(url);
-    let id = u.searchParams.get("v");
-    if (!id && u.hostname.includes("youtu.be")) id = u.pathname.slice(1);
-    if (!id && u.pathname.startsWith("/embed/")) id = u.pathname.split("/")[2];
-    return id ? `https://www.youtube.com/embed/${id}` : url;
-  } catch {
-    return url;
-  }
+  const id = extractYouTubeId(url);
+  return id ? `https://www.youtube.com/embed/${id}` : url;
 }
 
 export default function Suicidio() {
@@ -124,17 +118,7 @@ export default function Suicidio() {
               <h3 className="font-display text-xl md:text-2xl font-bold text-amber-900 mb-4">{cat}</h3>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {songs.map((s) => (
-                  <a key={s.id} href={s.youtube_url} target="_blank" rel="noopener noreferrer"
-                    data-testid={`playlist-song-${s.id}`}
-                    className="group flex items-center gap-4 rounded-2xl bg-white p-4 border border-amber-200 hover:border-amber-400 shadow-sm hover:shadow-lg transition-transform duration-200 hover:-translate-y-0.5">
-                    <div className="shrink-0 w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center group-hover:bg-amber-200 transition-colors">
-                      <Play className="w-5 h-5 text-amber-700" fill="currentColor" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="font-semibold text-amber-950 truncate">{s.song_name}</div>
-                      <div className="text-sm text-amber-800/70 truncate">{s.artist}</div>
-                    </div>
-                  </a>
+                  <SongCard key={s.id} song={s} />
                 ))}
               </div>
             </div>
@@ -149,7 +133,15 @@ export default function Suicidio() {
           {videos.map((v) => (
             <div key={v.id} data-testid={`video-${v.id}`} className="rounded-2xl overflow-hidden bg-white border border-amber-200 shadow-sm">
               <div className="aspect-video bg-black">
-                <iframe className="w-full h-full" src={ytEmbed(v.youtube_url)} title={v.title} allowFullScreen />
+                <iframe
+                  className="w-full h-full"
+                  src={ytEmbed(v.youtube_url)}
+                  title={v.title}
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                  loading="lazy"
+                />
               </div>
               <div className="p-4 font-semibold text-amber-950">{v.title}</div>
             </div>
@@ -280,6 +272,44 @@ function SectionTitle({ icon: Icon, title, subtitle }) {
       </div>
       <h2 className="mt-2 font-display text-3xl md:text-4xl font-bold text-amber-950">{title}</h2>
     </div>
+  );
+}
+
+function SongCard({ song }) {
+  const { playTrack, togglePlay, isCurrent, isPlaying, ready } = useMiniPlayer();
+  const videoId = extractYouTubeId(song.youtube_url);
+  const active = videoId && isCurrent(videoId);
+  const playing = active && isPlaying;
+
+  function handleClick() {
+    if (!videoId) return;
+    if (active) {
+      togglePlay();
+    } else {
+      playTrack({ videoId, name: song.song_name, artist: song.artist });
+    }
+  }
+
+  return (
+    <button
+      onClick={handleClick}
+      disabled={!videoId || !ready}
+      data-testid={`playlist-song-${song.id}`}
+      className={`group text-left flex items-center gap-4 rounded-2xl p-4 border shadow-sm hover:shadow-lg transition-transform duration-200 hover:-translate-y-0.5 w-full disabled:opacity-60 ${active ? "bg-amber-100 border-amber-400" : "bg-white border-amber-200 hover:border-amber-400"}`}
+    >
+      <div className={`shrink-0 w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${active ? "bg-amber-500 text-white" : "bg-amber-100 text-amber-700 group-hover:bg-amber-200"}`}>
+        {playing ? <Pause className="w-5 h-5" fill="currentColor" /> : <Play className="w-5 h-5 ml-0.5" fill="currentColor" />}
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="font-semibold text-amber-950 truncate">{song.song_name}</div>
+        <div className="text-sm text-amber-800/70 truncate">{song.artist}</div>
+      </div>
+      {active && (
+        <div className="text-[10px] font-bold uppercase tracking-wider text-amber-700 shrink-0">
+          {playing ? "Tocando" : "Pausado"}
+        </div>
+      )}
+    </button>
   );
 }
 
