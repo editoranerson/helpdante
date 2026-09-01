@@ -16,11 +16,12 @@ import bcrypt
 import jwt
 import httpx
 from datetime import datetime, timezone, timedelta
-from google import genai
+from emergentintegrations.llm.chat import LlmChat, UserMessage
 
 # ---------------- Mongo ----------------
 mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
+# Journaled writes ensure data is fsync'd before ACK — critical for pod suspend/resume durability
+client = AsyncIOMotorClient(mongo_url, w="majority", journal=True)
 db = client[os.environ['DB_NAME']]
 
 # ---------------- App ----------------
@@ -467,6 +468,11 @@ async def seed_admin():
         })
 
 async def seed_examples():
+    # Idempotent marker — seed data only ONCE ever. This protects user's edits/deletions
+    # even if a collection becomes empty (user deletes all items on purpose).
+    marker = await db["seed_marker"].find_one({"_id": "seeded_v1"})
+    if marker:
+        return
     if await db.playlists.count_documents({}) == 0:
         await db.playlists.insert_many([
             {"id": new_id(), "category": "Reflexivas", "song_name": "Trem-Bala", "artist": "Ana Vilela", "youtube_url": "https://www.youtube.com/watch?v=EnYWKzp2PhU"},
@@ -516,6 +522,8 @@ async def seed_examples():
             "_id": "singleton",
             "system_prompt": DEFAULT_DANTE_PROMPT,
         })
+    # Set marker so seed never runs again (protects user data)
+    await db["seed_marker"].insert_one({"_id": "seeded_v1", "at": now_iso()})
 
 @app.on_event("startup")
 async def on_startup():
