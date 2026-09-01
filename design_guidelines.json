@@ -1,0 +1,107 @@
+{
+  "project_name": "Help, Querido Dante",
+  "app_type": "hybrid_fullstack",
+  "theme": "Suicide prevention, emotional support, Setembro Amarelo, sensitive and careful tone",
+  "responsive": {
+    "breakpoint": "mobile-first",
+    "layout": "Grid and flex layouts should default to single column on mobile, expanding to multi-column on md and lg screens. Keep visuals from dominating the viewport.",
+    "typography": "Use fluid typography or Tailwind responsive text classes (text-2xl md:text-4xl). Inputs should be text-base (16px) minimum to prevent mobile zoom.",
+    "overflow_guard": "Ensure max-w-full and overflow-hidden on main wrappers to prevent horizontal scrolling.",
+    "tap_targets": "All buttons and links must have a minimum height and width of 44px for easy tapping on mobile."
+  },
+  "typography": {
+    "font_strategy": "Pastel & Soft archetype. Use rounded humanist fonts or clean, highly legible sans-serifs that feel friendly, approachable, and non-clinical.",
+    "headings": "Use fonts like Nunito, Quicksand, or standard 'font-sans' with a soft appearance. Avoid harsh geometric fonts. Use tracking-tight for larger headings.",
+    "body": "Inter or Figtree, maintaining clarity and legibility. Use leading-relaxed.",
+    "scale": {
+      "h1": "text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight",
+      "h2": "text-2xl md:text-3xl lg:text-4xl font-semibold",
+      "h3": "text-xl md:text-2xl font-medium",
+      "body": "text-base md:text-lg text-slate-700",
+      "small": "text-sm text-slate-500"
+    }
+  },
+  "colors": {
+    "portal": {
+      "background": "#FFFFFF",
+      "gradient_start": "#8A2BE2",
+      "gradient_end": "#FF69B4",
+      "text_primary": "#1E293B",
+      "text_secondary": "#475569"
+    },
+    "suicidio_page": {
+      "gradient_start": "#FEFCE8",
+      "gradient_end": "#FEF08A",
+      "accent": "#EAB308",
+      "text_primary": "#422006",
+      "text_secondary": "#713F12"
+    },
+    "admin": {
+      "background": "#F8FAFC",
+      "primary": "#3B82F6"
+    }
+  },
+  "visual_enhancers": {
+    "gradients": "Use blur-[100px] on absolute positioned divs to create fluid, soft gradient backgrounds instead of harsh linear gradients.",
+    "3d_icons": "To achieve a 3D stylized look with Lucide React icons, use SVG filters or CSS drop shadows: `filter drop-shadow-md` and bright colors with subtle internal gradients if possible. Alternatively, nest the icon in a container with a subtle Neumorphic shadow.",
+    "surfaces": "Use soft, welcoming surfaces. 'Glassmorphism' with heavy blur (`backdrop-blur-xl bg-white/70`) for sticky headers. 'Neumorphism' (soft UI) can be used for cards on the yellow page to make it feel tactile and gentle.",
+    "corners": "Use large border-radii (`rounded-2xl` or `rounded-3xl`) for cards and buttons to evoke safety and softness."
+  },
+  "components": {
+    "buttons": "Large, pill-shaped (`rounded-full`) or highly rounded (`rounded-2xl`). Must have hover states (`-translate-y-1 shadow-lg`) and focus rings.",
+    "cards": "White or off-white with soft ambient shadows (`shadow-sm` to `shadow-md` on hover). No harsh borders. `p-6` or `p-8` minimum padding.",
+    "tabs": "Use Shadcn Tabs for How to Act and Emergency Channels. Style them softly, replacing generic Vercel looks with pill-shaped active states.",
+    "chatbot_dante": {
+      "trigger": "Floating action button in bottom right. `fixed bottom-6 right-6 bg-yellow-400 hover:bg-yellow-500 rounded-full p-4 shadow-xl z-50`. Use the 'Ribbon' icon from Lucide React to represent the Setembro Amarelo.",
+      "modal": "Pre-chat form collecting Name, Phone, Age. Chat interface with legal warning and 'Dante está pensando...' loading state."
+    }
+  },
+  "layouts": {
+    "portal": "Centered, single-column main content with wide spacing. Huge welcoming title, soft fluid background blobs. Two massive navigation buttons side-by-side on desktop, stacked on mobile.",
+    "suicidio": "Bento grid or vertical stacked cards. Generous spacing (`gap-8` or `gap-12`). Sections clearly separated with soft horizontal dividers or alternating soft yellow/white backgrounds.",
+    "admin": "Standard sidebar or top-nav dashboard layout using Shadcn components (Tables, Cards, Tabs)."
+  },
+  "motion": {
+    "transitions": "Use `transition-all duration-300 ease-out` for interactive elements. Stagger entrance animations for lists (like psychologists or videos).",
+    "chatbot": "Smooth fade-in and slide-up for the chat modal. Bouncing dots for 'Dante está pensando...'."
+  },
+  "accessibility": {
+    "contrast": "Ensure APCA/WCAG AA contrast. Especially on yellow backgrounds, use dark brown or dark grey text, NOT white.",
+    "motion": "Respect `prefers-reduced-motion`.",
+    "testing": "All interactive elements MUST have `data-testid` attributes (e.g., `data-testid=\"btn-prevention\"`)."
+  },
+  "image_urls": [
+    {
+      "url": "https://images.unsplash.com/photo-1714976694756-28bf07af3758?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzh8MHwxfHNlYXJjaHw0fHxmcmllbmRseSUyMHBzeWNob2xvZ2lzdCUyMHBvcnRyYWl0fGVufDB8fHx8MTc4ODIwNTU4MXww&ixlib=rb-4.1.0&q=85",
+      "description": "A welcoming, friendly psychologist sitting on a couch",
+      "category": "psychologists_vitrine"
+    },
+    {
+      "url": "https://images.unsplash.com/photo-1714976694810-85add1a29c96?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzh8MHwxfHNlYXJjaHwxfHxmcmllbmRseSUyMHBzeWNob2xvZ2lzdCUyMHBvcnRyYWl0fGVufDB8fHx8MTc4ODIwNTU4MXww&ixlib=rb-4.1.0&q=85",
+      "description": "Psychologist actively listening in a therapy session",
+      "category": "psychologists_vitrine"
+    }
+  ],
+  "instructions_to_main_agent": [
+    "CREATE a complete mobile-first responsive design. All layouts must gracefully stack on mobile screens.",
+    "PORTAL PAGE: Create a white background with two absolute positioned blurred divs (`blur-[100px]`) behind the content using the requested purple (#8A2BE2) and pink (#FF69B4) to create a fluid, welcoming vibe. Add 'Saída Rápida ✕' button at top right (href to google.com). Include 2 big buttons: '💛 Prevenção ao Suicídio e Apoio Emocional' and '📖 Ir para o Site Principal do Livro'.",
+    "SUICIDIO PAGE: Use a soft, welcoming yellow gradient (`bg-gradient-to-b from-yellow-50 to-yellow-100`). Honor Setembro Amarelo. Implement all required sections: Hero, About, Playlist, Videos, How to Act (Tabs), Emergency (Tabs), Psychologists, Laws (Filters).",
+    "CHATBOT DANTE: Implement a floating button with Lucide's `Ribbon` icon (yellow color). The chat modal needs a pre-chat form (Name, Phone, Age), a chat interface with a legal warning, and a loading state ('Dante está pensando...').",
+    "ADMIN PAGE: Create a simple protected layout with Shadcn Tabs for 'Portal' and 'Categorias'.",
+    "3D ICONS: Use `lucide-react` icons and apply CSS classes like `drop-shadow-lg text-yellow-600` or wrap them in neumorphic circles to give them a stylized 3D feel.",
+    "Ensure dark text is used on the yellow suicide prevention page to maintain high accessibility contrast.",
+    "IMPORTANT: All files must be .js or .jsx, NOT .tsx. Provide the guidelines and implement accordingly.",
+    "Ensure ALL interactive elements have a `data-testid` attribute (e.g., `data-testid='btn-quick-exit'`).",
+    "DO NOT use a completely transparent background for dropdowns or modals."
+  ],
+  "UNIVERSAL GUIDELINES FOR MAIN AGENT": [
+    "Avoid generic 'AI slop' aesthetics. Use layered design, thoughtful spacing, and interactive hover states.",
+    "Do not use dark colors for gradients. Keep gradients soft and bright.",
+    "Use glass-morphism (`backdrop-blur-xl bg-white/70`) for floating elements like the chat modal and sticky headers.",
+    "Do not center-align body text or entire app containers. Left-align paragraphs.",
+    "Apply transitions explicitly (e.g., `transition-transform duration-200`) and NOT `transition-all`.",
+    "Use pill-shaped (`rounded-full`) or highly rounded (`rounded-2xl`) buttons to match the soft, welcoming theme.",
+    "Never use placeholder URLs. Use the provided image URLs.",
+    "Use `sonner` for any toast notifications."
+  ]
+}

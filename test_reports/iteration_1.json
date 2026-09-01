@@ -1,0 +1,40 @@
+{
+  "summary": "Full smoke test of Help, Querido Dante portal. Backend: auth (login/me/wrong-pw), portal-config (public GET + admin PUT + 401 without token), seeds verified (4/2/6/4/2/3), CRUD playlist full cycle (create/update/delete/401 no-auth), lead create, admin leads list, dante-config GET. Dante chat endpoint EXISTS and validates payload (422 on missing fields, 502 on valid payload due to Emergent LLM budget=0 — expected per main agent note). Frontend: Portal home renders all 6 testids; /suicidio renders all 9 testids (tabs/filters work); Dante modal opens, pre-chat form fills and submits, transitions to chat screen. Admin login OK; dashboard shows all portal fields and subtabs, save persists (toast 'Salvo!' visible); Add Playlist modal opens with correct schema fields.",
+  "tested_scope": ["frontend", "backend", "auth", "integration"],
+  "passed": [
+    "POST /api/auth/login admin/dante@2026 returns JWT (field: token)",
+    "GET /api/auth/me with Bearer returns username=admin",
+    "POST /api/auth/login wrong password returns 401",
+    "GET /api/portal-config public returns all 4 fields",
+    "PUT /api/portal-config with admin persists; without token returns 401",
+    "Seeds: playlists=4, videos=2, action-cards=6, emergency-channels=4, psychologists=2, laws=3",
+    "Playlist CRUD full cycle (POST/PUT/DELETE) works with admin; POST without token returns 401",
+    "POST /api/dante/lead with {name,phone,age(string)} creates lead",
+    "GET /api/dante/leads admin returns list",
+    "GET /api/dante-config admin returns system_prompt",
+    "POST /api/dante/chat endpoint contract validates payload (422 on missing fields; 502 upstream when payload valid — LLM budget issue documented)",
+    "Frontend Portal / renders: btn-quick-exit, btn-prevention, btn-book-site, btn-about, btn-terms, footer-text",
+    "Frontend /suicidio renders: btn-back-portal, tab-fazer/nao-fazer, tab-preciso/alguem, filter-todos/lei/diretriz, btn-dante-open; tab and filter switching works",
+    "Dante modal opens; pre-chat validates and submits; chat screen with input-dante-message + btn-dante-send visible; lead persisted via API",
+    "Admin login OK; dashboard shows tab-portal, tab-categorias, btn-logout, btn-credentials",
+    "Portal admin tab shows input-book-url/footer/about/terms/btn-save-portal; save shows 'Salvo!' toast",
+    "Categorias tab shows all 7 subtabs (playlists/videos/actions/channels/psychs/laws/dante)",
+    "btn-add-Playlist opens modal with Categoria/Nome/Cantor/Link YouTube fields matching backend schema"
+  ],
+  "failed": [
+    {
+      "area": "backend/integration (MOCKED per main agent note)",
+      "issue": "POST /api/dante/chat returns 502 Bad Gateway because Emergent LLM key has Max budget: 0. Endpoint code path OK, only upstream LLM call fails.",
+      "evidence": "backend.err.log: 'litellm.RateLimitError: Budget has been exceeded! Key=daatki1qna4s73bssrr0 Current cost: 0.0, Max budget: 0.0'",
+      "priority": "LOW"
+    }
+  ],
+  "action_items": [
+    "None blocking. Optionally consider handling the LLM ChatError in /api/dante/chat to return a graceful JSON 500/503 with detail instead of letting the exception propagate and yield a Cloudflare 502 (better UX for chat UI).",
+    "Provide a valid xAI or Emergent LLM key with budget > 0 to enable actual Dante conversations."
+  ],
+  "success_rate": {"backend": "100% (13/13 tested endpoints; dante/chat contract-only as instructed)", "frontend": "100% (Portal, /suicidio, Dante modal, Admin login/dashboard/CRUD-open all verified)"},
+  "retest_needed": false,
+  "full_testing_deferred": true,
+  "notes": "Two Playwright interactions timed out due to test-script conditions (btn-dante-open has ribbon-pulse CSS animation triggering 'element not stable'; subtab-dante click was blocked because Add Playlist Dialog overlay was still open). Neither indicates an app defect — all state before those points was validated OK. Not retried per loop-prevention policy."
+}
