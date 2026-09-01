@@ -16,7 +16,7 @@ import bcrypt
 import jwt
 import httpx
 from datetime import datetime, timezone, timedelta
-from emergentintegrations.llm.chat import LlmChat, UserMessage
+from google import genai
 
 # ---------------- Mongo ----------------
 mongo_url = os.environ['MONGO_URL']
