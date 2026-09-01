@@ -359,12 +359,51 @@ async def dante_chat(body: ChatRequest):
 
     xai_key = os.environ.get("XAI_API_KEY", "")
     xai_model = os.environ.get("XAI_MODEL", "grok-3-mini")
+    gemini_key = os.environ.get("GEMINI_API_KEY", "")
+    gemini_model = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash-lite")
 
     reply = None
-    xai_error = None
+    last_error = None
 
-    # Try xAI Grok first if key looks valid (must start with xai-)
-    if xai_key.startswith("xai-") and len(xai_key) > 20:
+    # Priority 1: Google Gemini AI Studio (direct)
+    if gemini_key and reply is None:
+        try:
+            # Build Gemini format contents
+            gemini_contents = []
+            for m in messages:
+                role = "user" if m["role"] == "user" else "model"
+                gemini_contents.append({"role": role, "parts": [{"text": m["content"]}]})
+            payload = {
+                "contents": gemini_contents,
+                "systemInstruction": {"parts": [{"text": full_system}]},
+                "generationConfig": {"temperature": 0.7},
+            }
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{gemini_model}:generateContent"
+            async with httpx.AsyncClient(timeout=45.0) as hc:
+                resp = await hc.post(
+                    url,
+                    params={"key": gemini_key},
+                    headers={"Content-Type": "application/json"},
+                    json=payload,
+                )
+            if resp.status_code < 400:
+                data = resp.json()
+                candidates = data.get("candidates") or []
+                if candidates:
+                    parts = candidates[0].get("content", {}).get("parts", [])
+                    reply = "".join([p.get("text", "") for p in parts]).strip() or None
+                if reply is None:
+                    last_error = f"Gemini empty response: {str(data)[:200]}"
+                    logging.warning(last_error)
+            else:
+                last_error = f"Gemini {resp.status_code}: {resp.text[:300]}"
+                logging.warning(last_error)
+        except Exception as e:
+            last_error = f"Gemini exception: {e}"
+            logging.warning(last_error)
+
+    # Priority 2: xAI Grok (if key looks valid)
+    if reply is None and xai_key.startswith("xai-") and len(xai_key) > 20:
         try:
             async with httpx.AsyncClient(timeout=45.0) as hc:
                 resp = await hc.post(
@@ -375,19 +414,19 @@ async def dante_chat(body: ChatRequest):
             if resp.status_code < 400:
                 reply = resp.json()["choices"][0]["message"]["content"]
             else:
-                xai_error = f"xAI {resp.status_code}: {resp.text[:200]}"
-                logging.warning(xai_error)
+                last_error = f"xAI {resp.status_code}: {resp.text[:200]}"
+                logging.warning(last_error)
         except Exception as e:
-            xai_error = f"xAI exception: {e}"
-            logging.warning(xai_error)
+            last_error = f"xAI exception: {e}"
+            logging.warning(last_error)
 
-    # Fallback: Emergent Universal Key
+    # Priority 3: Emergent Universal Key (fallback)
     if reply is None:
         emergent_key = os.environ.get("EMERGENT_LLM_KEY", "")
         provider = os.environ.get("LLM_PROVIDER", "openai")
         model = os.environ.get("LLM_MODEL", "gpt-5.4-mini")
         if not emergent_key:
-            raise HTTPException(status_code=500, detail=f"Nenhum provider LLM configurado. {xai_error or ''}")
+            raise HTTPException(status_code=500, detail=f"Nenhum provider LLM configurado. {last_error or ''}")
         try:
             chat_llm = LlmChat(
                 api_key=emergent_key,
@@ -398,7 +437,7 @@ async def dante_chat(body: ChatRequest):
             reply = resp if isinstance(resp, str) else str(resp)
         except Exception as e:
             logging.exception("Fallback LLM error")
-            raise HTTPException(status_code=502, detail=f"Erro no serviço Dante: {str(e)[:200]}")
+            raise HTTPException(status_code=502, detail=f"Erro no serviço Dante: {last_error or str(e)[:200]}")
 
     messages.append({"role": "assistant", "content": reply})
 
