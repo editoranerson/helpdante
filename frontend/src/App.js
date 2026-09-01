@@ -4,7 +4,6 @@ import { Toaster } from "@/components/ui/sonner";
 import Portal from "@/pages/Portal";
 import Suicidio from "@/pages/Suicidio";
 import Admin from "@/pages/Admin";
-import DanteChat from "@/components/DanteChat";
 import { MiniPlayerProvider } from "@/lib/miniPlayer";
 
 function App() {
@@ -17,7 +16,6 @@ function App() {
             <Route path="/suicidio" element={<Suicidio />} />
             <Route path="/admin" element={<Admin />} />
           </Routes>
-          <DanteChat />
         </BrowserRouter>
       </MiniPlayerProvider>
       <Toaster richColors position="top-center" />

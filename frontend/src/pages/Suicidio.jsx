@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import { useMiniPlayer, extractYouTubeId } from "@/lib/miniPlayer";
+import DanteChat from "@/components/DanteChat";
 
 const iconFor = (name) => {
   const C = LucideIcons[name] || Heart;
@@ -260,6 +261,7 @@ export default function Suicidio() {
           ))}
         </div>
       </section>
+      <DanteChat />
     </div>
   );
 }
